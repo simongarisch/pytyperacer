@@ -6,9 +6,6 @@ PASSWORD = "typeracermail"
 
 
 def test_pytyperacer():
-    bot = TypingBot(
-        USERNAME,
-        PASSWORD
-    )
+    bot = TypingBot(USERNAME, PASSWORD)
 
     bot.race()

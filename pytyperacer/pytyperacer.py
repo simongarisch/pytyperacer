@@ -5,7 +5,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import (
-    NoSuchElementException, ElementClickInterceptedException
+    NoSuchElementException,
+    ElementClickInterceptedException,
 )
 from .settings import URL
 
@@ -13,10 +14,7 @@ from .settings import URL
 def wait_css_selector_visible(driver, selector):
     """ Wait until a particular css selector is visible. """
     WebDriverWait(driver, 10).until(
-        EC.visibility_of_element_located((
-            By.CSS_SELECTOR,
-            selector
-        ))
+        EC.visibility_of_element_located((By.CSS_SELECTOR, selector))
     )
 
 
@@ -47,7 +45,9 @@ class TypingBot:
         counter = 0
         while not success and counter < 10:
             try:
-                self.driver.find_element_by_css_selector('.mainMenu  a.gwt-Anchor').click()
+                self.driver.find_element_by_css_selector(
+                    ".mainMenu  a.gwt-Anchor"
+                ).click()
             except (NoSuchElementException, ElementClickInterceptedException):
                 success = False
             else:
@@ -57,15 +57,15 @@ class TypingBot:
         return success
 
     def _login(self):
-        self.driver.find_element_by_css_selector(
-            'input.gwt-TextBox'
-        ).send_keys(self.username)
+        self.driver.find_element_by_css_selector("input.gwt-TextBox").send_keys(
+            self.username
+        )
 
-        self.driver.find_element_by_css_selector(
-            'input.gwt-PasswordTextBox'
-        ).send_keys(self.password)
+        self.driver.find_element_by_css_selector("input.gwt-PasswordTextBox").send_keys(
+            self.password
+        )
 
-        self.driver.find_element_by_css_selector('button.gwt-Button').click()
+        self.driver.find_element_by_css_selector("button.gwt-Button").click()
 
     def _get_typing_text(self):
         html = self.driver.page_source
@@ -77,5 +77,5 @@ class TypingBot:
             attrs = span.attrs
             if "unselectable" in attrs:
                 typing_content.append(span.text)
-        
+
         return "".join(typing_content)
