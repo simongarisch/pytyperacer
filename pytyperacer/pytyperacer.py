@@ -9,7 +9,7 @@ from selenium.common.exceptions import (
     NoSuchElementException,
     ElementClickInterceptedException,
 )
-from .settings import URL, WAIT
+from .settings import URL, MAX_WAIT_SECONDS, SELECTORS
 
 
 class State(Enum):
@@ -19,21 +19,35 @@ class State(Enum):
     DEAD = 4
 
 
-class get_state(driver):
-    time.sleep(WAIT)
-    html = self.driver.page_source
+def get_state(driver):
+    html = driver.page_source
     soup = BeautifulSoup(html, "html.parser")
 
 
-def wait_css_selector_visible(driver, selector):
-    """ Wait until a particular css selector is visible. """
-    WebDriverWait(driver, 10).until(
-        EC.visibility_of_element_located((By.CSS_SELECTOR, selector))
+def targeted_selectors_visible(driver):
+    """ Are any of the css selectors we are after
+        e.g. '.gwt-Anchor', 'input.gwt-PasswordTextBox' ...
+        visible on this page.
+    """
+    for css_selector in SELECTORS.values():
+        elements = driver.find_elements(By.CSS_SELECTOR, css_selector)
+        if len(elements) != 0:
+            return elements
+    return []  # no elements found
+
+
+def wait_for_targeted_css_selector(driver):
+    """ Wait until any of our targeted selectors are visible. """
+    WebDriverWait(driver, MAX_WAIT_SECONDS).until(
+        targeted_selectors_visible(driver)
     )
 
-    if (wd.isElementPresent(By.id("Accept"))) {
-        wd.findElement(By.id("Accept")).click();
-    }
+
+def wait_for_specific_css_selector(driver, selector):
+    """ Wait until a specific css selector is visible. """
+    WebDriverWait(driver, MAX_WAIT_SECONDS).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, selector))
+    )
 
 
 class TypingBot:
@@ -47,6 +61,7 @@ class TypingBot:
 
     def race(self):
         self._reset_driver()
+        wait_for_targeted_css_selector(self.driver)
         self._try_enter_race()
         self._login()
         self._try_enter_race()
@@ -58,7 +73,7 @@ class TypingBot:
         self.driver.get(URL)
 
     def _enter_race(self):
-        wait_css_selector_visible(self.driver, ".gwt-Anchor")
+        wait_for_specific_css_selector(self.driver, ".gwt-Anchor")
         self.driver.find_element_by_css_selector(".gwt-Anchor").click()
 
     def _try_enter_race(self):
@@ -82,9 +97,9 @@ class TypingBot:
             self.username
         )
 
-        self.driver.find_element_by_css_selector("input.gwt-PasswordTextBox").send_keys(
-            self.password
-        )
+        self.driver.find_element_by_css_selector(
+            "input.gwt-PasswordTextBox"
+        ).send_keys(self.password)
 
         self.driver.find_element_by_css_selector("button.gwt-Button").click()
 
