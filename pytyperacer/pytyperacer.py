@@ -1,4 +1,5 @@
 import time
+from enum import Enum
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -8,7 +9,20 @@ from selenium.common.exceptions import (
     NoSuchElementException,
     ElementClickInterceptedException,
 )
-from .settings import URL
+from .settings import URL, WAIT
+
+
+class State(Enum):
+    MAIN_PAGE = 1
+    ENTER_LOGIN = 2
+    RACING = 3
+    DEAD = 4
+
+
+class get_state(driver):
+    time.sleep(WAIT)
+    html = self.driver.page_source
+    soup = BeautifulSoup(html, "html.parser")
 
 
 def wait_css_selector_visible(driver, selector):
@@ -17,24 +31,31 @@ def wait_css_selector_visible(driver, selector):
         EC.visibility_of_element_located((By.CSS_SELECTOR, selector))
     )
 
+    if (wd.isElementPresent(By.id("Accept"))) {
+        wd.findElement(By.id("Accept")).click();
+    }
+
 
 class TypingBot:
     def __init__(self, username, password):
         self.username = username
         self.password = password
-        self._driver = webdriver.Chrome()
 
     @property
     def driver(self):
         return self._driver
 
     def race(self):
-        self.driver.get(URL)
+        self._reset_driver()
         self._try_enter_race()
         self._login()
         self._try_enter_race()
         text = self._get_typing_text()
         print(text)
+
+    def _reset_driver(self):
+        self._driver = webdriver.Chrome()
+        self.driver.get(URL)
 
     def _enter_race(self):
         wait_css_selector_visible(self.driver, ".gwt-Anchor")
