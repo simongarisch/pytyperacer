@@ -24,23 +24,29 @@ def get_state(driver):
     soup = BeautifulSoup(html, "html.parser")
 
 
-def targeted_selectors_visible(driver):
+def get_visible_selectors(driver):
     """ Are any of the css selectors we are after
         e.g. '.gwt-Anchor', 'input.gwt-PasswordTextBox' ...
         visible on this page.
     """
+    selectors_visible = []
     for css_selector in SELECTORS.values():
         elements = driver.find_elements(By.CSS_SELECTOR, css_selector)
-        if len(elements) != 0:
-            return elements
-    return []  # no elements found
+        selectors_visible.extend(elements)
+    return selectors_visible
 
 
 def wait_for_targeted_css_selector(driver):
     """ Wait until any of our targeted selectors are visible. """
-    WebDriverWait(driver, MAX_WAIT_SECONDS).until(
-        targeted_selectors_visible(driver)
-    )
+    attempts = 0
+    max_attempts = 10
+    wait_time = float(MAX_WAIT_SECONDS) / max_attempts
+    selectors_visible = get_visible_selectors()
+    while len(selectors_visible) == 0:
+        time.sleep(wait_time)
+        selectors_visible = get_visible_selectors()
+        print(selectors)
+    return selectors
 
 
 def wait_for_specific_css_selector(driver, selector):
