@@ -9,19 +9,24 @@ from selenium.common.exceptions import (
     NoSuchElementException,
     ElementClickInterceptedException,
 )
-from .settings import URL, MAX_WAIT_SECONDS, SELECTORS
-
-
-class State(Enum):
-    MAIN_PAGE = 1
-    ENTER_LOGIN = 2
-    RACING = 3
-    DEAD = 4
+from .settings import URL, MAX_WAIT_SECONDS, CSS_SELECTORS
+from .settings import State
 
 
 def get_state(driver):
-    html = driver.page_source
-    soup = BeautifulSoup(html, "html.parser")
+    """ Get the current racing state. """
+    css_selectors = wait_for_any_css_selector()
+
+    if CSS_SELECTORS[State.ENTER_RACE] in css_selectors:
+        return State.ENTER_RACE
+
+    if CSS_SELECTORS[State.LOGIN] in css_selectors:
+        return State.LOGIN
+
+    if CSS_SELECTORS[State.RACING] in css_selectors:
+        return State.RACING
+
+    return State.UNKNOWN
 
 
 def is_css_selector_visible(driver, css_selector):
@@ -33,16 +38,16 @@ def is_css_selector_visible(driver, css_selector):
         return True
 
 
-def get_visible_selectors(driver):
+def get_visible_css_selectors(driver):
     """ Are any of the css selectors we are after
         e.g. '.gwt-Anchor', 'input.gwt-PasswordTextBox' ...
         visible on this page.
     """
-    selectors_visible = []
-    for css_selector in SELECTORS.values():
-        elements = driver.find_elements(By.CSS_SELECTOR, css_selector)
-        selectors_visible.extend(elements)
-    return selectors_visible
+    visible_css_selectors = []
+    for css_selector in CSS_SELECTORS.values():
+        if is_css_selector_visible(driver, css_selector):
+            visible_css_selectors.append(css_selector)
+    return visible_css_selectors
 
 
 def wait_for_any_css_selector(driver):
@@ -50,12 +55,17 @@ def wait_for_any_css_selector(driver):
     attempts = 0
     max_attempts = 10
     wait_time = float(MAX_WAIT_SECONDS) / max_attempts
-    selectors_visible = get_visible_selectors(driver)
-    while len(selectors_visible) == 0:
+
+    while True:
+        attempts += 1
+        visible_css_selectors = get_visible_css_selectors(driver)
+        if len(visible_css_selectors) != 0:
+            break
+        if attempts >= max_attempts:
+            break
         time.sleep(wait_time)
-        selectors_visible = get_visible_selectors(driver)
-    print(selectors_visible)
-    return selectors_visible
+
+    return visible_css_selectors
 
 
 def wait_for_specific_css_selector(driver, selector):
