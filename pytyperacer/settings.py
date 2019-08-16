@@ -1,23 +1,14 @@
 """
 Our main configuration settings.
 """
-from enum import Enum
-
 
 URL = "https://play.typeracer.com/"
 
 MAX_WAIT_SECONDS = 5
 
-
-class State(Enum):
-    ENTER_RACE = 1
-    LOGIN = 2
-    RACING = 3
-    UNKNOWN = 4
-
-
-CSS_SELECTORS = {
-    State.ENTER_RACE: ".gwt-Anchor",
-    State.LOGIN: "input.gwt-PasswordTextBox",
-    State.RACING: "input.txtInput",
-}
+CSS_SELECTOR_ENTER = ".gwt-Anchor"
+CSS_SELECTOR_ENTER_ALT = ".mainMenu  a.gwt-Anchor"
+CSS_SELECTOR_USER = "input.gwt-TextBox"
+CSS_SELECTOR_PASS = "input.gwt-PasswordTextBox"
+CSS_SELECTOR_BTN_LOGIN = "button.gwt-Button"
+CSS_SELECTOR_RACING = "input.txtInput"
