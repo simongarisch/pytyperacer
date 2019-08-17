@@ -8,7 +8,7 @@ from .settings import *
 
 def get_state(driver):
     """ Get the current racing state. """
-    css_selectors = wait_for_any_css_selector()
+    css_selectors = wait_for_any_css_selector(driver)
 
     if (
         CSS_SELECTOR_LOGIN in css_selectors
