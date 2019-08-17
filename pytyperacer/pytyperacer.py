@@ -1,5 +1,4 @@
 import time
-from enum import Enum
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -10,95 +9,8 @@ from selenium.common.exceptions import (
     ElementClickInterceptedException,
 )
 
-from .settings import (
-    URL,
-    MAX_WAIT_SECONDS,
-    CSS_SELECTOR_ENTER,
-    CSS_SELECTOR_ENTER_ALT,
-    CSS_SELECTOR_USER,
-    CSS_SELECTOR_PASS,
-    CSS_SELECTOR_BTN_LOGIN,
-    CSS_SELECTOR_RACING,
-)
-
-
-CSS_SELECTORS = [
-    CSS_SELECTOR_ENTER,
-    CSS_SELECTOR_ENTER_ALT,
-    CSS_SELECTOR_USER,
-    CSS_SELECTOR_PASS,
-    CSS_SELECTOR_BTN_LOGIN,
-    CSS_SELECTOR_RACING,
-]
-
-
-class State(Enum):
-    ENTER = 1
-    LOGIN = 2
-    RACING = 3
-    UNKNOWN = 4
-
-
-def get_state(driver):
-    """ Get the current racing state. """
-    css_selectors = wait_for_any_css_selector()
-
-    if CSS_SELECTOR_ENTER in css_selectors:
-        return State.ENTER
-
-    if CSS_SELECTOR_PASS in css_selectors:
-        return State.LOGIN
-
-    if CSS_SELECTOR_RACING in css_selectors:
-        return State.RACING
-
-    return State.UNKNOWN
-
-
-def is_css_selector_visible(driver, css_selector):
-    """ Is a particular css selector visible. """
-    elements = driver.find_elements(By.CSS_SELECTOR, css_selector)
-    if len(elements) == 0:
-        return False
-    else:
-        return True
-
-
-def get_visible_css_selectors(driver):
-    """ Are any of the css selectors we are after
-        e.g. '.gwt-Anchor', 'input.gwt-PasswordTextBox' ...
-        visible on this page.
-    """
-    visible_css_selectors = []
-    for css_selector in CSS_SELECTORS:
-        if is_css_selector_visible(driver, css_selector):
-            visible_css_selectors.append(css_selector)
-    return visible_css_selectors
-
-
-def wait_for_any_css_selector(driver):
-    """ Wait until any css selectors of interest are visible. """
-    attempts = 0
-    max_attempts = 10
-    wait_time = float(MAX_WAIT_SECONDS) / max_attempts
-
-    while True:
-        attempts += 1
-        visible_css_selectors = get_visible_css_selectors(driver)
-        if len(visible_css_selectors) != 0:
-            break
-        if attempts >= max_attempts:
-            break
-        time.sleep(wait_time)
-
-    return visible_css_selectors
-
-
-def wait_for_specific_css_selector(driver, css_selector):
-    """ Wait until a specific css selector is visible. """
-    WebDriverWait(driver, MAX_WAIT_SECONDS).until(
-        EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector))
-    )
+from . import util
+from .settings import *
 
 
 class TypingBot:
@@ -112,11 +24,10 @@ class TypingBot:
 
     def race(self):
         self._reset_driver()
-        wait_for_any_css_selector(self.driver)
-        self._enter_race()
+        util.wait_for_any_css_selector(self.driver)
         if self._login_required():
             self._login()
-        self._try_enter_race()  # look into this...
+        self._enter_race()
         text = self._get_typing_text()
         self._start_typing(text)
 
@@ -126,17 +37,15 @@ class TypingBot:
 
     def _enter_race(self):
         """ Wait for the enter race css selector and click on it. """
-        wait_for_specific_css_selector(self.driver, CSS_SELECTOR_ENTER)
-        self.driver.find_element_by_css_selector(CSS_SELECTOR_ENTER).click()
+        util.css_selector_click(self.driver, CSS_SELECTOR_ENTER_RACE)
 
+    """
     def _try_enter_race(self):
         success = False
         counter = 0
         while not success and counter < 10:
             try:
-                self.driver.find_element_by_css_selector(
-                    ".mainMenu  a.gwt-Anchor"
-                ).click()
+                util.css_selector_click(self.driver, CSS_SELECTOR_ENTER_RACE)
             except (NoSuchElementException, ElementClickInterceptedException):
                 success = False
             else:
@@ -144,14 +53,20 @@ class TypingBot:
             counter += 1
             time.sleep(1)
         return success
+    """
 
     def _login_required(self):
         """ Have we been presented with a login prompt. """
-        if is_css_selector_visible(self.driver, CSS_SELECTOR_USER):
+        if util.is_css_selector_visible(self.driver, CSS_SELECTOR_LOGIN):
+            return True
+        if util.is_css_selector_visible(self.driver, CSS_SELECTOR_USER):
             return True
         return False
 
     def _login(self):
+        if util.is_css_selector_visible(self.driver, CSS_SELECTOR_LOGIN):
+            util.css_selector_click(self.driver, CSS_SELECTOR_LOGIN)
+
         self.driver.find_element_by_css_selector(CSS_SELECTOR_USER).send_keys(
             self.username
         )
@@ -160,9 +75,7 @@ class TypingBot:
             self.password
         )
 
-        self.driver.find_element_by_css_selector(
-            CSS_SELECTOR_BTN_LOGIN
-        ).click()
+        util.css_selector_click(self.driver, CSS_SELECTOR_BTN_LOGIN)
 
     def _get_typing_text(self):
         html = self.driver.page_source
@@ -178,6 +91,10 @@ class TypingBot:
         return "".join(typing_content)
 
     def _start_typing(self, text):
+        """ There will be a wait time for other competitors to join before
+            the txtInput box becomes clickable.
+            Make sure that you don't apply a timeout too soon.
+        """
         txt_input = WebDriverWait(self.driver, MAX_WAIT_SECONDS).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, CSS_SELECTOR_RACING))
         )
