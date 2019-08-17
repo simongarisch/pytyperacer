@@ -10,10 +10,7 @@ def get_state(driver):
     """ Get the current racing state. """
     css_selectors = wait_for_any_css_selector(driver)
 
-    if (
-        CSS_SELECTOR_LOGIN in css_selectors
-        or CSS_SELECTOR_USER in css_selectors
-    ):
+    if CSS_SELECTOR_LOGIN in css_selectors:
         return State.LOGIN
 
     if CSS_SELECTOR_ENTER_RACE in css_selectors:

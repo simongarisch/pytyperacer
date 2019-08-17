@@ -39,9 +39,11 @@ class TypingBot:
     def race(self):
         while True:
             self._take_action()
+            time.sleep(3)
 
     def _take_action(self):
         state = util.get_state(self.driver)
+        print(state)
         if not isinstance(state, State):
             raise TypeError("Must be an instance of State!")
         if state is State.LOGIN:
