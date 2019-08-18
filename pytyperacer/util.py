@@ -6,22 +6,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from .settings import *
 
 
-def get_state(driver):
-    """ Get the current racing state. """
-    css_selectors = wait_for_any_css_selector(driver)
-
-    if CSS_SELECTOR_LOGIN in css_selectors:
-        return State.LOGIN
-
-    if CSS_SELECTOR_ENTER_RACE in css_selectors:
-        return State.ENTER_RACE
-
-    if CSS_SELECTOR_RACING in css_selectors:
-        return State.RACING
-
-    return State.UNKNOWN
-
-
 def is_css_selector_visible(driver, css_selector):
     """ Is a particular css selector visible. """
     elements = driver.find_elements(By.CSS_SELECTOR, css_selector)
