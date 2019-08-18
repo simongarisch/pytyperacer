@@ -25,9 +25,10 @@ class UnknownStateError(Exception):
 class TypingBot:
     _driver = None
 
-    def __init__(self, username, password):
+    def __init__(self, username: str, password: str, wpm=None):
         self.username = username
         self.password = password
+        self.wpm = wpm
 
     @property
     def driver(self):
@@ -36,14 +37,38 @@ class TypingBot:
             self._driver.get(URL)
         return self._driver
 
-    def race(self):
+    def quit(self):
+        self.driver.quit()
+
+    def race(self, max_actions=None):
+        num_actions = 0
         while True:
+            time.sleep(1)
             self._take_action()
-            time.sleep(3)
+            num_actions += 1
+            if max_actions is not None:
+                if num_actions >= max_actions:
+                    break
+        self.quit()
+
+    def get_state(self):
+        """ Get the current racing state. """
+        css_selectors = util.wait_for_any_css_selector(self.driver)
+        html = self.driver.page_source
+
+        if HTML_SIGN_IN in html:
+            return State.LOGIN
+
+        if CSS_SELECTOR_ENTER_RACE in css_selectors:
+            return State.ENTER_RACE
+
+        if CSS_SELECTOR_RACING in css_selectors:
+            return State.RACING
+
+        return State.UNKNOWN
 
     def _take_action(self):
-        state = util.get_state(self.driver)
-        print(state)
+        state = self.get_state()
         if not isinstance(state, State):
             raise TypeError("Must be an instance of State!")
         if state is State.LOGIN:
@@ -98,5 +123,18 @@ class TypingBot:
             EC.element_to_be_clickable((By.CSS_SELECTOR, CSS_SELECTOR_RACING))
         )
 
-        for character in text:
-            txt_input.send_keys(character)
+        send_keys = txt_input.send_keys
+        sleep = time.sleep
+        if self.wpm is None:
+            # send keys as fast as possible
+            for character in text:
+                send_keys(character)
+        else:
+            # target some words per minute
+            num_characters = len(text)
+            num_words = num_characters / CHARS_PER_WORD
+            target_time_sec = (num_words / self.wpm) * 60
+            wait_time_per_char = target_time_sec / num_characters
+            for character in text:
+                send_keys(character)
+                sleep(wait_time_per_char)
