@@ -5,12 +5,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import (
-    NoSuchElementException,
-    ElementClickInterceptedException,
-)
 
-from . import util
+from util import *
 from .settings import *
 
 
@@ -51,50 +47,32 @@ class TypingBot:
                     break
         self.quit()
 
-    def get_state(self):
-        """ Get the current racing state. """
-        css_selectors = util.wait_for_any_css_selector(self.driver)
-        html = self.driver.page_source
-
-        if HTML_SIGN_IN in html:
-            return State.LOGIN
-
-        if CSS_SELECTOR_ENTER_RACE in css_selectors:
-            return State.ENTER_RACE
-
-        if CSS_SELECTOR_RACING in css_selectors:
-            return State.RACING
-
-        return State.UNKNOWN
-
     def _take_action(self):
-        state = self.get_state()
-        if not isinstance(state, State):
-            raise TypeError("Must be an instance of State!")
-        if state is State.LOGIN:
+        wait_for_visible_link()
+        if util.is_link_visible(LINK_SIGN_IN):
             self._login()
-        elif state is State.ENTER_RACE:
-            self._enter_race()
-        elif state is State.RACING:
+        elif util.is_link_visible(LINK_ENTER_RACE):
+            util.link_click(LINK_ENTER_RACE)
+        elif util.is_link_visible(LINK_LEAVE_RACE):
             self._enter_typing_text()
-        elif state is State.UNKNOWN:
+        elif util.is_link_visible(LINK_RACE_AGAIN):
+            util.link_click(LINK_RACE_AGAIN)
+        else:
             raise UnknownStateError
 
     def _login(self):
-        if util.is_css_selector_visible(self.driver, CSS_SELECTOR_LOGIN):
-            util.css_selector_click(self.driver, CSS_SELECTOR_LOGIN)
+        if util.is_link_visible(LINK_SIGN_IN):
+            util.link_click(LINK_SIGN_IN)
 
-        self.driver.find_element_by_css_selector(CSS_SELECTOR_USER).send_keys(
-            self.username
-        )
-        self.driver.find_element_by_css_selector(CSS_SELECTOR_PASS).send_keys(
-            self.password
-        )
-        util.css_selector_click(self.driver, CSS_SELECTOR_BTN_LOGIN)
+            self.driver.find_element_by_css_selector(
+                CSS_SELECTOR_USER
+            ).send_keys(self.username)
 
-    def _enter_race(self):
-        """ Wait for the enter race css selector and click on it. """
-        util.css_selector_click(self.driver, CSS_SELECTOR_ENTER_RACE)
+            self.driver.find_element_by_css_selector(
+                CSS_SELECTOR_PASS
+            ).send_keys(self.password)
+
+            util.css_selector_click(self.driver, CSS_SELECTOR_BTN_LOGIN)
 
     def _enter_typing_text(self):
         """ Collect the text we need to type and send each character. """
@@ -120,7 +98,7 @@ class TypingBot:
             Make sure that you don't apply a timeout too soon.
         """
         txt_input = WebDriverWait(self.driver, MAX_WAIT_SECONDS).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, CSS_SELECTOR_RACING))
+            EC.element_to_be_clickable((By.CSS_SELECTOR, CSS_SELECTOR_INPUT))
         )
 
         send_keys = txt_input.send_keys

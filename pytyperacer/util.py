@@ -3,7 +3,32 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from .settings import *
+
+
+def is_link_visible(driver, link_text):
+    try:
+        driver.find_element_by_link_text(link_text)
+        return True
+    except NoSuchElementException:
+        return False
+
+
+def link_click(driver, link_text):
+    driver.find_element_by_link_text(link_text).click()
+
+
+def wait_for_visible_link(driver):
+    """ Wait for any link of interest to be visible. """
+    wait_time = 0
+    while wait_time < MAX_WAIT_SECONDS:
+        for link in LINKS:
+            if is_link_visible(driver, link):
+                return
+        time.sleep(1)
+        wait_time += 1
+    raise TimeoutException
 
 
 def is_css_selector_visible(driver, css_selector):
@@ -13,36 +38,6 @@ def is_css_selector_visible(driver, css_selector):
         return False
     else:
         return True
-
-
-def get_visible_css_selectors(driver):
-    """ Are any of the css selectors we are after
-        e.g. '.gwt-Anchor', 'input.gwt-PasswordTextBox' ...
-        visible on this page.
-    """
-    visible_css_selectors = []
-    for css_selector in CSS_SELECTORS:
-        if is_css_selector_visible(driver, css_selector):
-            visible_css_selectors.append(css_selector)
-    return visible_css_selectors
-
-
-def wait_for_any_css_selector(driver):
-    """ Wait until any css selectors of interest are visible. """
-    attempts = 0
-    max_attempts = 10
-    wait_time = float(MAX_WAIT_SECONDS) / max_attempts
-
-    while True:
-        attempts += 1
-        visible_css_selectors = get_visible_css_selectors(driver)
-        if len(visible_css_selectors) != 0:
-            break
-        if attempts >= max_attempts:
-            break
-        time.sleep(wait_time)
-
-    return visible_css_selectors
 
 
 def wait_for_specific_css_selector(driver, css_selector):
