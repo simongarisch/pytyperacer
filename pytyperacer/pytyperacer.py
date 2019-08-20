@@ -1,12 +1,11 @@
 import time
-from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from util import *
+from .util import *
 from .settings import *
 
 
@@ -48,21 +47,21 @@ class TypingBot:
         self.quit()
 
     def _take_action(self):
-        wait_for_visible_link()
-        if util.is_link_visible(LINK_SIGN_IN):
+        wait_for_visible_link(self.driver)
+        if is_link_visible(self.driver, LINK_SIGN_IN):
             self._login()
-        elif util.is_link_visible(LINK_ENTER_RACE):
-            util.link_click(LINK_ENTER_RACE)
-        elif util.is_link_visible(LINK_LEAVE_RACE):
+        elif is_link_visible(self.driver, LINK_ENTER_RACE):
+            link_click(self.driver, LINK_ENTER_RACE)
+        elif is_link_visible(self.driver, LINK_RACE_AGAIN):
+            link_click(self.driver, LINK_RACE_AGAIN)
+        elif is_link_visible(self.driver, LINK_LEAVE_RACE):
             self._enter_typing_text()
-        elif util.is_link_visible(LINK_RACE_AGAIN):
-            util.link_click(LINK_RACE_AGAIN)
         else:
             raise UnknownStateError
 
     def _login(self):
-        if util.is_link_visible(LINK_SIGN_IN):
-            util.link_click(LINK_SIGN_IN)
+        if is_link_visible(self.driver, LINK_SIGN_IN):
+            link_click(self.driver, LINK_SIGN_IN)
 
             self.driver.find_element_by_css_selector(
                 CSS_SELECTOR_USER
@@ -72,7 +71,7 @@ class TypingBot:
                 CSS_SELECTOR_PASS
             ).send_keys(self.password)
 
-            util.css_selector_click(self.driver, CSS_SELECTOR_BTN_LOGIN)
+            css_selector_click(self.driver, CSS_SELECTOR_BTN_LOGIN)
 
     def _enter_typing_text(self):
         """ Collect the text we need to type and send each character. """
@@ -103,16 +102,32 @@ class TypingBot:
 
         send_keys = txt_input.send_keys
         sleep = time.sleep
+        current_time = time.time
         if self.wpm is None:
             # send keys as fast as possible
             for character in text:
                 send_keys(character)
         else:
             # target some words per minute
+            start_time = current_time()
             num_characters = len(text)
             num_words = num_characters / CHARS_PER_WORD
             target_time_sec = (num_words / self.wpm) * 60
+            target_end_time = start_time + target_time_sec
             wait_time_per_char = target_time_sec / num_characters
             for character in text:
                 send_keys(character)
                 sleep(wait_time_per_char)
+                # recalculate the wait time per character
+                # as sending keys / executing code takes time...
+                target_time_sec = max(target_end_time - current_time(), 0)
+                wait_time_per_char = target_time_sec / num_characters
+
+        # wait for the race again link
+        counter = 0
+        while (
+            not is_link_visible(self.driver, LINK_RACE_AGAIN)
+            and counter < MAX_WAIT_SECONDS
+        ):
+            time.sleep(1)
+            counter += 1
