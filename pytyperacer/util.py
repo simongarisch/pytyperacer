@@ -31,15 +31,6 @@ def wait_for_visible_link(driver):
     raise TimeoutException
 
 
-def is_css_selector_visible(driver, css_selector):
-    """ Is a particular css selector visible. """
-    elements = driver.find_elements(By.CSS_SELECTOR, css_selector)
-    if len(elements) == 0:
-        return False
-    else:
-        return True
-
-
 def wait_for_specific_css_selector(driver, css_selector):
     """ Wait until a specific css selector is visible. """
     WebDriverWait(driver, MAX_WAIT_SECONDS).until(
@@ -50,4 +41,3 @@ def wait_for_specific_css_selector(driver, css_selector):
 def css_selector_click(driver, css_selector):
     wait_for_specific_css_selector(driver, css_selector)
     driver.find_element_by_css_selector(css_selector).click()
-
