@@ -1,1 +1,1 @@
-from .pytyperacer import TypingBot
+from .pytyperacer import TypingBot  # noqa
