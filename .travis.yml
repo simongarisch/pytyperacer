@@ -1,4 +1,8 @@
-# Config file for automatic testing at travis-ci.org
+
+language: python
+
+python:
+  - "3.6"
 
 addons:
   chrome: stable
@@ -12,11 +16,6 @@ before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - sleep 3 # give xvfb some time to start
-
-language: python
-
-python:
-  - "3.6"
 
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -U tox-travis
