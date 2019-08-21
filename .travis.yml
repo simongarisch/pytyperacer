@@ -9,11 +9,16 @@ addons:
 
 before_install:
  - sudo apt-get update
- - sudo apt-get install chromium-chromedriver
+ - export CHROMEDRIVER_VERSION=`curl -s http://chromedriver.storage.googleapis.com/LATEST_RELEASE`
+ - curl -L -O "http://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+ - unzip chromedriver_linux64.zip && chmod +x chromedriver && sudo mv chromedriver /usr/local/bin
 
 before_script:
-  - export PATH=$PATH:/usr/lib/chromium-browser/
+  # From the travis docs: https://docs.travis-ci.com/user/gui-and-headless-browsers/
+  # To run tests requiring a graphical user interface on Travis CI, use xvfb (X Virtual Framebuffer)
   - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  - sleep 3 # give xvfb some time to start
 
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -U tox-travis
