@@ -1,8 +1,6 @@
 """
 Our main configuration settings.
 """
-from enum import Enum
-
 
 URL = "https://play.typeracer.com/"
 
