@@ -115,19 +115,26 @@ class TypingBot:
             target_time_sec = (num_words / self.wpm) * 60
             target_end_time = start_time + target_time_sec
             wait_time_per_char = target_time_sec / num_characters
+
+            chars_sent = 0
             for character in text:
                 send_keys(character)
+                chars_sent += 1
                 sleep(wait_time_per_char)
                 # recalculate the wait time per character
                 # as sending keys / executing code takes time...
                 target_time_sec = max(target_end_time - current_time(), 0)
-                wait_time_per_char = target_time_sec / num_characters
+                if num_characters > chars_sent:
+                    wait_time_per_char = target_time_sec / (
+                        num_characters - chars_sent
+                    )
 
         # wait for the race again link
         counter = 0
-        while (
-            not is_link_visible(self.driver, LINK_RACE_AGAIN)
-            and counter < MAX_WAIT_SECONDS
-        ):
+        while True:
+            if is_link_visible(self.driver, LINK_RACE_AGAIN):
+                break
+            if counter >= MAX_WAIT_SECONDS:
+                break
             time.sleep(1)
             counter += 1
