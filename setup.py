@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-with open("README.rst") as readme_file:
+with open("README.md") as readme_file:
     readme = readme_file.read()
 
 setup_requirements = ["pytest-runner"]
@@ -15,11 +15,6 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
     ],
     description="Python racing bot for https://play.typeracer.com/",
     install_requires=["selenium>=3.141.0", "beautifulsoup4>=4.8.0"],
