@@ -4,18 +4,14 @@ language: python
 python:
   - "3.6"
 
+# https://docs.travis-ci.com/user/gui-and-headless-browsers/
+dist: trusty
 addons:
   chrome: stable
 
 # https://benlimmer.com/2019/01/14/travis-ci-xvfb/
 services:
   - xvfb
-
-before_install:
- - sudo apt-get update
- - export CHROMEDRIVER_VERSION=`curl -s http://chromedriver.storage.googleapis.com/LATEST_RELEASE`
- - curl -L -O "http://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
- - unzip chromedriver_linux64.zip && chmod +x chromedriver && sudo mv chromedriver /usr/local/bin
 
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -U tox-travis
