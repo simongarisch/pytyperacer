@@ -1,24 +1,22 @@
-dist: trusty
 language: python
 
 python:
-  - "3.6"
-
-# https://docs.travis-ci.com/user/gui-and-headless-browsers/
-#addons:
-#  chrome: stable
-
-# https://benlimmer.com/2019/01/14/travis-ci-xvfb/
-#services:
-#  - xvfb
+  - "3.5"
+  
+dist: trusty
 
 addons:
-  apt:
-    - google-chrome-stable
-    - chromium-chromedriver
+  chrome: stable
+  
+before_install:
+  - pip install selenium
+  - wget https://chromedriver.storage.googleapis.com/2.35/chromedriver_linux64.zip
+  - unzip chromedriver_linux64.zip -d bin/
 
 before_script:
-  - ln -s /usr/lib/chromium-browser/chromedriver ~/bin/chromedriver
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3
 
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -U tox-travis
