@@ -16,6 +16,8 @@ addons:
 before_script:
   # include ChromeDriver in PATH
   - ln --symbolic /usr/lib/chromium-browser/chromedriver "${HOME}/bin/chromedriver"
+  # start Chrome and listen on localhost
+  - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3
