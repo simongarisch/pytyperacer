@@ -28,7 +28,9 @@ class TypingBot:
     @property
     def driver(self):
         if self._driver is None:
-            self._driver = webdriver.Chrome()
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument("--no-sandbox")
+            self._driver = webdriver.Chrome(chrome_options=chrome_options)
             self._driver.get(URL)
         return self._driver
 

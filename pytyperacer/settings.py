@@ -4,7 +4,7 @@ Our main configuration settings.
 
 URL = "https://play.typeracer.com/"
 
-MAX_WAIT_SECONDS = 20
+MAX_WAIT_SECONDS = 30
 CHARS_PER_WORD = 5  # typeracer counts X characers as a word
 
 LINK_SIGN_IN = "Sign In"
