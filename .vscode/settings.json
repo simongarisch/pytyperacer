@@ -9,7 +9,7 @@
 	"python.formatting.provider": "black",
     "editor.formatOnSave": true,
     "python.linting.pylintPath": "env\\Scripts\\pylint",
-    "python.linting.pep8Enabled": true,
+    "python.linting.pycodestyleEnabled": true,
     "python.linting.pylintEnabled": true,
     "git.enabled": true,
     "python.formatting.blackArgs": [

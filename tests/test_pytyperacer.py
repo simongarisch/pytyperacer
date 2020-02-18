@@ -1,7 +1,7 @@
 from pytyperacer import TypingBot
 
-USERNAME = "typeracer196"
-PASSWORD = "typeracermail"
+USERNAME = "racemeifyoucan"
+PASSWORD = "myracepassword"
 WPM = 98
 
 
